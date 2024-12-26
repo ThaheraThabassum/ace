@@ -1,28 +1,56 @@
-name: Build
+name: File Transfer Workflow
 
 on:
   push:
     branches:
       - main
-
+  workflow_dispatch:
 
 jobs:
-  build:
-    name: Build and analyze
+  file-transfer:
     runs-on: ubuntu-latest
-    
+
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@v3
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-          SONAR_SCANNER_OPTS: "-X"
-      # If you wish to fail your job when the Quality Gate is red, uncomment the
-      # following lines. This would typically be used to fail a deployment.
-      # - uses: sonarsource/sonarqube-quality-gate-action@master
-      #   timeout-minutes: 5
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+    # Stage 1: Checkout Repository
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    # Stage 2: Set Up Python
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    # Stage 3: Install Dependencies
+    - name: Install dependencies
+      run: |
+        pip install pandas openpyxl
+
+    # Stage 4: Execute the Python Script
+    - name: Execute Python Script
+      run: |
+        python /extract_files.py
+
+    # Stage 5: Set Up SSH Key for Access
+    - name: Set up SSH Key for Access
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SOURCE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        echo "Host *" > ~/.ssh/config
+        echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+        echo "  UserKnownHostsFile=/dev/null" >> ~/.ssh/config
+
+    # Stage 6: Connect to Source Server and Fetch Files
+    - name: Fetch Files from Source Server
+      run: |
+        for file in $(jq -r '.files[]' changes.json); do
+          scp thahera@3.111.252.210:$file /tmp/$file
+        done
+
+    # Stage 7: Transfer Files to Destination Server
+    - name: Transfer Files to Destination Server
+      run: |
+        for file in $(jq -r '.files[]' changes.json); do
+          scp /tmp/$file thahera@3.111.252.210:/home/thahera/$file
+        done
