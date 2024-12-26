@@ -9,7 +9,7 @@ df = pd.read_excel(excel_file_path)
 
 # Extract file names and paths
 files = df['file'].tolist()
-file_paths = df['file_path'].tolist()
+file_paths = df['path'].tolist()
 
 # Create a JSON output
 output = {
