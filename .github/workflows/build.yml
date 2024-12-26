@@ -29,7 +29,7 @@ jobs:
     # Stage 4: Execute the Python Script
     - name: Execute Python Script
       run: |
-        python /extract_files.py
+        python ./github/extract_files.py
 
     # Stage 5: Set Up SSH Key for Access
     - name: Set up SSH Key for Access
