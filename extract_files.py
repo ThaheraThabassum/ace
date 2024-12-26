@@ -2,7 +2,7 @@ import pandas as pd
 import json
 
 # Path to the Excel file
-excel_file_path = '/app_template.xlsx'
+excel_file_path = './app_template.xlsx'
 
 # Read the Excel file
 df = pd.read_excel(excel_file_path)
