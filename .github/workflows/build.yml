@@ -25,7 +25,8 @@ jobs:
     - name: Install dependencies
       run: |
         pip install pandas openpyxl
-
+    - name: List files in the repository
+      run: ls -R
     # Stage 4: Execute the Python Script
     - name: Execute Python Script
       run: |
